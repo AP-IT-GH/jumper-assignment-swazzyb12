@@ -1,0 +1,27 @@
+behaviors:
+  JumperAgent: # << BELANGRIJK: Moet overeenkomen met 'Behavior Name' in Unity
+    trainer_type: ppo
+    hyperparameters:
+      batch_size: 256       # Goede startwaarde, kan 128, 512, 1024 zijn
+      buffer_size: 2048     # bv. batch_size * 8 of * 10. Moet veelvoud van batch_size zijn.
+      learning_rate: 3.0e-4
+      beta: 5.0e-4          # Entropie regularisatie, helpt exploratie
+      epsilon: 0.2          # PPO clipping parameter
+      lambd: 0.95           # GAE parameter
+      num_epoch: 3          # Aantal keer dat over de buffer wordt ge-trained
+      learning_rate_schedule: linear # Kan ook 'constant' zijn
+
+    network_settings:
+      normalize: false      # Zet op true als je input observaties erg variëren in schaal
+      hidden_units: 128     # Aantal neuronen per hidden layer
+      num_layers: 2         # Aantal hidden layers
+      # vis_encode_type: simple # Alleen relevant als je visual observations gebruikt
+
+    reward_signals:
+      extrinsic:
+        gamma: 0.99         # Discount factor voor toekomstige rewards
+        strength: 1.0       # Gewicht van de extrinsic reward
+
+    max_steps: 500000       # Totaal aantal stappen voor de training (pas aan naar wens)
+    time_horizon: 128       # Hoeveel stappen data per agent voordat naar buffer gestuurd
+    summary_freq: 10000     # Hoe vaak data naar TensorBoard wordt geschreven
