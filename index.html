@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zelflerende Springende Agent - Project Documentatie</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding: 1rem 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            padding-bottom: 10px;
+        }
+        nav ul {
+            padding: 0;
+            list-style: none;
+            text-align: center;
+        }
+        nav ul li {
+            display: inline;
+            margin-right: 20px;
+        }
+        nav a {
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav a:hover {
+            color: #007bff;
+        }
+        section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #555;
+        }
+        pre {
+            background: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap; /* Allows wrapping */
+            word-wrap: break-word; /* Allows breaking long words */
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .download-button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .download-button:hover {
+            background-color: #0056b3;
+        }
+        .chart-container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                font-family: serif; /* Serif is often better for print */
+                background-color: #fff;
+                color: #000;
+            }
+            .container {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                border: none;
+            }
+            header, nav, .download-button, .no-print {
+                display: none !important; /* Hide non-essential elements for print */
+            }
+            section {
+                border-bottom: none; /* Remove borders in print */
+                page-break-inside: avoid; /* Try to avoid breaking sections across pages */
+            }
+            h2, h3 {
+                page-break-after: avoid; /* Try to keep headings with their content */
+            }
+            pre {
+                background: #f9f9f9; /* Lighter background for print */
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            a {
+                color: #000;
+                text-decoration: none; /* Remove underlines in print */
+            }
+            a[href]:after {
+                content: " (" attr(href) ")"; /* Show URLs in print for links */
+                font-size: 0.8em;
+                color: #555;
+            }
+            .chart-container canvas { /* Ensure charts are rendered for print */
+                max-width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Zelflerende Springende Agent met Unity ML-Agents</h1>
+    </header>
+
+    <div class="container">
+        <button class="download-button" onclick="window.print()">Download als PDF / Print</button>
+
+        <nav class="no-print">
+            <h2>Inhoudsopgave</h2>
+            <ul>
+                <li><a href="#project-overzicht">1. Project Overzicht</a></li>
+                <li><a href="#benodigdheden">2. Benodigdheden</a></li>
+                <li><a href="#scene-setup">3. Scene Setup</a></li>
+                <li><a href="#scripts">4. Scripts</a></li>
+                <li><a href="#configuratie">5. ML-Agents Configuratie</a></li>
+                <li><a href="#training">6. Training</a></li>
+                <li><a href="#gebruik-model">7. Gebruik Model</a></li>
+                <li><a href="#resultaten">8. Resultaten & Analyse</a></li>
+                <li><a href="#probleemoplossing">9. Probleemoplossing</a></li>
+            </ul>
+        </nav>
+
+        <section id="project-overzicht">
+            <h2>1. Project Overzicht</h2>
+            <p>Dit project demonstreert de implementatie van een zelflerende agent in Unity die leert over een obstakel te springen. Het obstakel krijgt bij elke episode een willekeurige snelheid. De agent wordt getraind met behulp van Unity ML-Agents en de PPO (Proximal Policy Optimization) algoritme.</p>
+            <p>De episode eindigt onder de volgende condities:</p>
+            <ul>
+                <li>De agent botst met het obstakel (negatieve beloning).</li>
+                <li>De agent springt succesvol over het obstakel (positieve beloning).</li>
+            </ul>
+            <p>Als het obstakel de agent passeert zonder interactie, reset het obstakel zichzelf naar zijn startpositie en de episode van de agent loopt door voor een nieuwe poging met het (geresette) obstakel.</p>
+        </section>
+
+        <section id="benodigdheden">
+            <h2>2. Benodigdheden</h2>
+            <ul>
+                <li>Unity Editor (bijv. 2020.3 LTS of nieuwer)</li>
+                <li>Unity ML-Agents Toolkit (versie die compatibel is met je Unity versie, bijv. Release 19+)
+                    <ul>
+                        <li>C# package: <code>com.unity.ml-agents</code> (installeer via Unity Package Manager)</li>
+                        <li>Python package: <code>mlagents</code> (installeer via pip: <code>pip install mlagents</code>)</li>
+                    </ul>
+                </li>
+                <li>Python (bijv. 3.7+)</li>
+                <li>Geïnstalleerde Python libraries: <code>torch</code>, <code>onnx</code>, <code>onnxruntime</code> (zie <code>requirements.txt</code>)</li>
+            </ul>
+        </section>
+
+        <section id="scene-setup">
+            <h2>3. Scene Setup in Unity</h2>
+            <p>1. Maak een nieuw 3D Unity project aan.</p>
+            <p>2. Installeer het <code>com.unity.ml-agents</code> package via de Package Manager (<code>Window > Package Manager</code>).</p>
+
+            <h3>Grond (Plane)</h3>
+            <ol>
+                <li>Maak een <code>Plane</code> object: <code>GameObject > 3D Object > Plane</code>.</li>
+                <li>Noem het <code>Ground</code>.</li>
+                <li>Zorg dat het een collider heeft (standaard <code>Mesh Collider</code>).</li>
+                <li>Stel de <code>Layer</code> in op <code>Ground</code> (maak deze layer aan via <code>Layers > Edit Layers...</code>).</li>
+            </ol>
+
+            <h3>Agent (Jumper)</h3>
+            <ol>
+                <li>Maak een <code>Cube</code> voor de agent: <code>GameObject > 3D Object > Cube</code>. Noem het <code>Agent</code>.</li>
+                <li>Positioneer het boven de <code>Ground</code>.</li>
+                <li>Voeg componenten toe:
+                    <ul>
+                        <li><strong><code>Rigidbody</code></strong>: <code>Use Gravity</code>: Aangevinkt. <code>Constraints</code>: Freeze Rotation X, Y, Z.</li>
+                        <li><strong><code>Box Collider</code></strong>.</li>
+                        <li><strong><code>AgentJump.cs</code> script</strong>.</li>
+                        <li><strong><code>Behavior Parameters</code></strong>:
+                            <ul>
+                                <li><code>Behavior Name</code>: <code>JumperAgent</code></li>
+                                <li><code>Space Size</code> (Observations): <strong>6</strong>.</li>
+                                <li><code>Actions</code>: Discrete Actions Branches: <strong>1</strong>, Branch 0 Size: <strong>2</strong>.</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>Decision Requester</code></strong>: <code>Decision Period</code>: <strong>5</strong>.</li>
+                    </ul>
+                </li>
+                <li>Maak een leeg GameObject als kind van <code>Agent</code>, noem het <code>GroundCheck</code>. Positioneer iets onder de "voeten".</li>
+                <li>Wijs in Inspector van <code>Agent</code> (<code>AgentJump</code> script): <code>Ground Check</code> (het <code>GroundCheck</code> object), <code>Ground Mask</code> (de <code>Ground</code> layer).</li>
+            </ol>
+            
+            <h3>Obstakel</h3>
+            <ol>
+                <li>Maak een <code>Cube</code>: <code>GameObject > 3D Object > Cube</code>. Noem het <code>Obstacle</code>.</li>
+                <li>Positioneer het rechts van de agent.</li>
+                <li>Tag het met <code>ObstacleTag</code>.</li>
+                <li>Voeg componenten toe:
+                    <ul>
+                        <li><strong><code>Rigidbody</code></strong>: <code>Use Gravity</code>: Uitgevinkt. <code>Is Kinematic</code>: Aangevinkt.</li>
+                        <li><strong><code>Box Collider</code></strong>.</li>
+                        <li><strong><code>ObstacleMovement.cs</code> script</strong>.</li>
+                    </ul>
+                </li>
+                <li>Wijs in Inspector van <code>Obstacle</code> de velden toe: <code>minSpeed</code>, <code>maxSpeed</code>, <code>despawnXBoundary</code>.</li>
+            </ol>
+
+            <h3>Spawn Punten</h3>
+            <ol>
+                <li>Maak lege GameObjects: <code>AgentSpawnPoint</code> en <code>ObstacleSpawnPoint</code>. Positioneer ze correct.</li>
+                <li>Wijs in Inspector van <code>Agent</code> (<code>AgentJump</code> script): <code>Obstacle Transform</code> (<code>Obstacle</code> object), <code>Obstacle Script</code> (<code>Obstacle</code> object), <code>Agent Spawn Point</code>, <code>Obstacle Spawn Point</code>.</li>
+            </ol>
+        </section>
+
+        <section id="scripts">
+            <h2>4. Scripts</h2>
+            <h3><code>AgentJump.cs</code></h3>
+            <pre><code class="language-csharp">
+// Hier de volledige code van AgentJump.cs
+// (Kopieer de C# code van je AgentJump.cs hier)
+// Voorbeeld:
+using Unity.MLAgents;
+using Unity.MLAgents.Sensors;
+using Unity.MLAgents.Actuators;
+using UnityEngine;
+
+public class AgentJump : Agent
+{
+    Rigidbody rb;
+    public float jumpForce = 8f;
+    public Transform groundCheck;
+    public float groundDistance = 0.4f;
+    public LayerMask groundMask;
+
+    bool isGrounded;
+
+    public Transform obstacleTransform;
+    public ObstacleMovement obstacleScript;
+    public Transform agentSpawnPoint;
+    public Transform obstacleSpawnPoint;
+
+    private bool obstacleClearedThisSpecificObstacle;
+
+    public float jumpCooldown = 0.5f;
+    private float lastJumpTime = -10f;
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+        if (obstacleTransform == null || obstacleScript == null || agentSpawnPoint == null || obstacleSpawnPoint == null)
+        {
+            Debug.LogError("Een of meerdere belangrijke objecten zijn niet toegewezen in de Inspector voor AgentJump!");
+        }
+        lastJumpTime = Time.time - jumpCooldown;
+    }
+
+    public override void OnEpisodeBegin()
+    {
+        transform.position = agentSpawnPoint.position;
+        transform.rotation = agentSpawnPoint.rotation;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+
+        if (obstacleScript != null)
+        {
+            obstacleScript.InitializeObstacle(obstacleSpawnPoint.position);
+        }
+        
+        obstacleClearedThisSpecificObstacle = false;
+        lastJumpTime = Time.time - jumpCooldown;
+    }
+
+    void FixedUpdate()
+    {
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        if (obstacleTransform == null || !obstacleTransform.gameObject.activeInHierarchy || obstacleScript == null)
+        {
+            return;
+        }
+
+        if (obstacleClearedThisSpecificObstacle) {
+            return;
+        }
+
+        float agentX = transform.position.x;
+        float agentY = transform.position.y;
+        float obstacleX = obstacleTransform.position.x;
+        float obstacleY = obstacleTransform.position.y;
+
+        bool obstacleIsJustPassed = obstacleX < (agentX - 0.5f) && obstacleX > (agentX - 2.5f);
+        bool agentIsSufficientlyHigh = agentY > (obstacleY + 0.5f);
+
+        if (obstacleIsJustPassed && agentIsSufficientlyHigh)
+        {
+            SetReward(1.0f);
+            obstacleClearedThisSpecificObstacle = true; 
+            Debug.Log("Obstakel succesvol ontweken! +1 Reward. EPISODE EINDIGT.");
+            EndEpisode();
+            return;
+        }
+    }
+
+    public override void CollectObservations(VectorSensor sensor)
+    {
+        sensor.AddObservation(transform.localPosition.y);
+        sensor.AddObservation(rb.linearVelocity.y);
+        sensor.AddObservation(isGrounded); 
+
+        if (obstacleTransform != null && obstacleTransform.gameObject.activeInHierarchy)
+        {
+            Vector3 dirToObstacle = obstacleTransform.position - transform.position;
+            sensor.AddObservation(dirToObstacle.x);
+            sensor.AddObservation(dirToObstacle.z);
+            sensor.AddObservation(obstacleScript != null ? obstacleScript.currentSpeed : 0f);
+        }
+        else
+        {
+            sensor.AddObservation(0f);
+            sensor.AddObservation(0f);
+            sensor.AddObservation(0f);
+        }
+    }
+
+    public override void OnActionReceived(ActionBuffers actions)
+    {
+        int jumpAction = actions.DiscreteActions[0];
+
+        if (jumpAction == 1 && isGrounded && (Time.time >= lastJumpTime + jumpCooldown))
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            lastJumpTime = Time.time;
+        }
+    }
+
+    public override void Heuristic(in ActionBuffers actionsOut)
+    {
+        var discreteActions = actionsOut.DiscreteActions;
+        discreteActions[0] = 0;
+        if (Input.GetKey(KeyCode.Space))
+        {
+            discreteActions[0] = 1;
+        }
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("ObstacleTag"))
+        {
+            if (!obstacleClearedThisSpecificObstacle)
+            {
+                SetReward(-1.0f);
+                Debug.Log("Botsing met obstakel! -1 Reward. EPISODE EINDIGT.");
+            }
+            EndEpisode();
+        }
+    }
+}
+            </code></pre>
+
+            <h3><code>ObstacleMovement.cs</code></h3>
+            <pre><code class="language-csharp">
+// Hier de volledige code van ObstacleMovement.cs
+// (Kopieer de C# code van je ObstacleMovement.cs hier)
+// Voorbeeld:
+using UnityEngine;
+
+public class ObstacleMovement : MonoBehaviour
+{
+    public float minSpeed = 2f;
+    public float maxSpeed = 8f;
+    [HideInInspector]
+    public float currentSpeed;
+
+    [HideInInspector]
+    public Vector3 initialSpawnPosition;
+
+    public float despawnXBoundary = -10f;
+
+    public void InitializeObstacle(Vector3 spawnPos)
+    {
+        initialSpawnPosition = spawnPos;
+        transform.position = initialSpawnPosition;
+        SetRandomSpeed();
+    }
+
+    void FixedUpdate()
+    {
+        transform.Translate(Vector3.left * currentSpeed * Time.fixedDeltaTime, Space.World);
+
+        if (transform.position.x < despawnXBoundary)
+        {
+            ResetToSpawnAndGetNewSpeed();
+        }
+    }
+
+    void SetRandomSpeed()
+    {
+        currentSpeed = Random.Range(minSpeed, maxSpeed);
+    }
+    
+    public void ResetToSpawnAndGetNewSpeed()
+    {
+        transform.position = initialSpawnPosition;
+        SetRandomSpeed();
+    }
+}
+            </code></pre>
+        </section>
+
+        <section id="configuratie">
+            <h2>5. ML-Agents Configuratie (`jumper_config.yaml`)</h2>
+            <p>Maak een <code>jumper_config.yaml</code> bestand (bijv. in een <code>config</code> map in je project root).</p>
+            <pre><code class="language-yaml">
+behaviors:
+  JumperAgent: # Moet overeenkomen met 'Behavior Name' in Unity
+    trainer_type: ppo
+    hyperparameters:
+      batch_size: 256
+      buffer_size: 2048
+      learning_rate: 3.0e-4
+      beta: 5.0e-4
+      epsilon: 0.2
+      lambd: 0.95
+      num_epoch: 3
+      learning_rate_schedule: linear
+    network_settings:
+      normalize: false
+      hidden_units: 128
+      num_layers: 2
+    reward_signals:
+      extrinsic:
+        gamma: 0.99
+        strength: 1.0
+    max_steps: 500000 # Pas aan voor kortere/langere training
+    time_horizon: 128
+    summary_freq: 10000
+            </code></pre>
+        </section>
+
+        <section id="training">
+            <h2>6. Training van de Agent</h2>
+            <ol>
+                <li>Open een terminal.</li>
+                <li>Navigeer naar de root van je Unity project.</li>
+                <li>Activeer je Python environment.</li>
+                <li>Start de training: <code>mlagents-learn config/jumper_config.yaml --run-id=JumperAgent_Run1</code></li>
+                <li>Wacht op "Listening on port..." en druk Play in Unity.</li>
+                <li>(Optioneel) Monitor met TensorBoard: <code>tensorboard --logdir=results</code></li>
+                <li>Om te hervatten vanaf een checkpoint: <code>mlagents-learn config/jumper_config.yaml --resume --run-id=&lt;ORIGINELE_RUN_ID&gt;</code></li>
+            </ol>
+        </section>
+
+        <section id="gebruik-model">
+            <h2>7. Gebruik van het Getrainde Model</h2>
+            <ol>
+                <li>Na training, vind het <code>.onnx</code> model in <code>results/&lt;run_id&gt;/</code>.</li>
+                <li>Sleep het <code>.onnx</code> bestand naar je Unity project.</li>
+                <li>Selecteer het <code>Agent</code> GameObject.</li>
+                <li>In <code>Behavior Parameters</code>, sleep het <code>.onnx</code> model naar het <code>Model</code> slot.</li>
+                <li>Druk Play in Unity.</li>
+            </ol>
+        </section>
+
+        <section id="resultaten">
+            <h2>8. Resultaten & Analyse (TensorBoard)</h2>
+            <p>Hieronder de geplotte data van de trainingssessie.</p>
+
+            <div class="chart-container">
+                <h3>Cumulatieve Beloning</h3>
+                <canvas id="cumulativeRewardChart"></canvas>
+                <p><strong>Uitleg:</strong> De cumulatieve beloning begon negatief en steeg snel naar een waarde rond +0.95. Dit geeft aan dat de agent succesvol leerde de taak uit te voeren (het ontwijken van het obstakel voor een +1 beloning, met af en toe een botsing voor -1). Het plateau rond +0.95 suggereert dat de agent een hoog succespercentage bereikte, maar niet perfect was (af en toe nog een botsing).</p>
+            </div>
+
+            <div class="chart-container">
+                <h3>Episode Lengte</h3>
+                <canvas id="episodeLengthChart"></canvas>
+                <p><strong>Uitleg:</strong> De gemiddelde episode lengte bleef relatief stabiel rond de 17-19 stappen. Dit is consistent met de setup: een episode eindigt snel bij succes of falen. Als het obstakel de agent passeert zonder interactie en zichzelf reset, loopt de agent-episode door, maar de data hier lijkt vooral de lengte te reflecteren tot een beslissende interactie.</p>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Policy Loss</h3>
+                <canvas id="policyLossChart"></canvas>
+                <p><strong>Uitleg:</strong> De policy loss bleef relatief laag en stabiel gedurende de training, met kleine fluctuaties rond de 0.04-0.05. Dit suggereert dat het beleidsnetwerk (dat beslist welke actie te nemen) redelijk stabiel was en geen grote, plotselinge veranderingen in het leerproces onderging. Een lage, stabiele policy loss is over het algemeen een goed teken.</p>
+            </div>
+
+            <div class="chart-container">
+                <h3>Value Loss</h3>
+                <canvas id="valueLossChart"></canvas>
+                <p><strong>Uitleg:</strong> De value loss daalde significant in het begin van de training (van ~0.38 naar ~0.01-0.03) en bleef daarna laag. Dit geeft aan dat het value netwerk (dat de verwachte toekomstige beloning schat) steeds beter werd in het voorspellen van de waarde van toestanden. Een dalende value loss is een goed teken dat de agent de waarde van zijn acties leert.</p>
+            </div>
+
+            <h3>Algemene Observaties en Conclusies</h3>
+            <ul>
+                <li>De agent heeft succesvol geleerd om het obstakel te ontwijken door te springen.</li>
+                <li>De cumulatieve beloning toont een duidelijke leercurve.</li>
+                <li>De episode lengte is consistent met een taak die snel eindigt bij interactie.</li>
+                <li>De loss functies (policy en value) laten zien dat het netwerk convergeerde en stabiel leerde.</li>
+                <li>De hyperparameters in de <code>jumper_config.yaml</code> lijken geschikt te zijn geweest voor deze taak.</li>
+            </ul>
+        </section>
+
+        <section id="probleemoplossing">
+            <h2>9. Probleemoplossing</h2>
+            <ul>
+                <li><strong>Agent leert niet:</strong> Controleer beloningsfunctie, observaties, hyperparameters, Max Steps.</li>
+                <li><strong>"Buffer vol":</strong> Verlaag <code>buffer_size</code> of <code>time_horizon</code>.</li>
+                <li><strong>Unity crasht:</strong> Kan duiden op C# code probleem of te zware scene.</li>
+                <li><strong>Model slot accepteert geen <code>.onnx</code>:</strong> Zorg dat Barracuda package is geïnstalleerd.</li>
+                <li><strong><code>Module onnx is not installed!</code> error:</strong> Installeer de <code>onnx</code> Python library (<code>pip install onnx</code>).</li>
+            </ul>
+        </section>
+         <button class="download-button" onclick="window.print()">Download als PDF / Print</button>
+    </div>
+
+    <script>
+        // CSV Data
+        const cumulativeRewardCsv = `Wall time,Step,Value
+1746995092.2159936,10000,-0.3136531412601471
+1746995153.136741,20000,-0.07169811427593231
+1746995219.348694,30000,0.318352073431015
+1746995278.3742478,40000,0.607692301273346
+1746995337.9954672,50000,0.8264299631118774
+1746995397.7942326,60000,0.88165682554245
+1746995456.6648028,70000,0.8893442749977112
+1746995514.7178829,80000,0.9526627063751221
+1746995573.4589732,90000,0.9563491940498352
+1746995632.3045058,100000,0.953125
+1746995690.766827,110000,0.9730769395828247
+1746995749.304902,120000,0.9838383793830872
+1746995807.7658942,130000,0.9840319156646729
+1746995865.64777,140000,0.9711934328079224
+1746995924.0094302,150000,0.9798792600631714`;
+
+        const episodeLengthCsv = `Wall time,Step,Value
+1746995092.2144878,10000,17.454879760742188
+1746995153.142831,20000,17.83584976196289
+1746995219.3541708,30000,17.773408889770508
+1746995278.3805044,40000,18.176923751831055
+1746995338.0002975,50000,18.721893310546875
+1746995397.7999313,60000,18.729782104492188
+1746995456.6698709,70000,19.559425354003906
+1746995514.7228408,80000,18.668638229370117
+1746995573.4646304,90000,18.882936477661133
+1746995632.3110287,100000,18.49609375
+1746995690.7724557,110000,18.21923065185547
+1746995749.3111458,120000,19.216161727905273
+1746995807.7715385,130000,18.942115783691406
+1746995865.6535954,140000,19.5720157623291
+1746995924.0149212,150000,19.126760482788086`;
+
+        const policyLossCsv = `Wall time,Step,Value
+1746995092.2369397,10000,0.04435914009809494
+1746995153.144334,20000,0.047471784055233
+1746995219.3541708,30000,0.04500611126422882
+1746995278.3815112,40000,0.0481681227684021
+1746995338.001313,50000,0.04891418665647507
+1746995397.8009317,60000,0.05129224434494972
+1746995456.6698709,70000,0.04676084965467453
+1746995514.7228408,80000,0.039040010422468185
+1746995573.4646304,90000,0.042594246566295624
+1746995632.3110287,100000,0.047984037548303604
+1746995690.7724557,110000,0.04351270943880081
+1746995749.3116596,120000,0.045024462044239044
+1746995807.7715385,130000,0.04341788589954376
+1746995865.654599,140000,0.045489463955163956
+1746995924.0159266,150000,0.05024811252951622`;
+
+        const valueLossCsv = `Wall time,Step,Value
+1746995092.2374587,10000,0.3800205588340759
+1746995153.144334,20000,0.3211694657802582
+1746995219.3551695,30000,0.24813108146190643
+1746995278.3815112,40000,0.16417747735977173
+1746995338.001313,50000,0.09435374289751053
+1746995397.8014376,60000,0.07813210040330887
+1746995456.671111,70000,0.06544724851846695
+1746995514.7228408,80000,0.03472147136926651
+1746995573.466134,90000,0.02718176320195198
+1746995632.3120286,100000,0.03211900591850281
+1746995690.7738752,110000,0.020210564136505127
+1746995749.3116596,120000,0.012438610196113586
+1746995807.772538,130000,0.012668396346271038
+1746995865.654599,140000,0.01841028220951557
+1746995924.0159266,150000,0.017693892121315002`;
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const headers = lines[0].split(',');
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                const entry = {};
+                headers.forEach((header, index) => {
+                    entry[header.trim()] = values[index].trim();
+                });
+                data.push(entry);
+            }
+            return data;
+        }
+
+        function plotChart(canvasId, csvData, label, yAxisLabel, color = 'rgb(75, 192, 192)') {
+            const parsedData = parseCSV(csvData);
+            const steps = parsedData.map(d => parseInt(d.Step));
+            const values = parsedData.map(d => parseFloat(d.Value));
+
+            new Chart(document.getElementById(canvasId), {
+                type: 'line',
+                data: {
+                    labels: steps,
+                    datasets: [{
+                        label: label,
+                        data: values,
+                        borderColor: color,
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Trainingsstap (Step)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: yAxisLabel
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            plotChart('cumulativeRewardChart', cumulativeRewardCsv, 'Gemiddelde Cumulatieve Beloning', 'Beloning', 'rgb(54, 162, 235)');
+            plotChart('episodeLengthChart', episodeLengthCsv, 'Gemiddelde Episode Lengte', 'Lengte (Stappen)', 'rgb(255, 159, 64)');
+            plotChart('policyLossChart', policyLossCsv, 'Policy Loss', 'Loss', 'rgb(255, 99, 132)');
+            plotChart('valueLossChart', valueLossCsv, 'Value Loss', 'Loss', 'rgb(75, 192, 192)');
+        });
+    </script>
+</body>
+</html>
