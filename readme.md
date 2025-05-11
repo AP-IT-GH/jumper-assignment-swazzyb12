@@ -2,7 +2,7 @@
 
 Dit project demonstreert de implementatie van een zelflerende agent in Unity die leert over een obstakel te springen. Het obstakel krijgt bij elke episode een willekeurige snelheid. De agent wordt getraind met behulp van Unity ML-Agents en het PPO-algoritme.
 
-Voor de **volledige interactieve documentatie, inclusief gedetailleerde setup-instructies, code en live grafieken**, bezoek de [Project Webpagina](https://github.com/AP-IT-GH/jumper-assignment-swazzyb12/index.html)
+Voor de **volledige interactieve documentatie, inclusief gedetailleerde setup-instructies, code en live grafieken**, bezoek de [Project Webpagina](https://ap-it-gh.github.io/jumper-assignment-swazzyb12/index.html)
 
 ## Project Overzicht
 
@@ -75,7 +75,7 @@ De value loss vertoonde een significante daling in de vroege trainingsfasen, van
 
 ![Value Loss](image-3.png)`
 
-**Voor een gedetailleerde analyse, interactieve grafieken, en de volledige project setup, zie de [Project Webpagina](https://github.com/AP-IT-GH/jumper-assignment-swazzyb12/index.html).**
+**Voor een gedetailleerde analyse, interactieve grafieken, en de volledige project setup, zie de [Project Webpagina](https://ap-it-gh.github.io/jumper-assignment-swazzyb12/index.html).**
 
 ## Scripts en Configuratie
 
@@ -85,12 +85,12 @@ De kernlogica is geïmplementeerd in twee C# scripts:
 
 De trainingsparameters worden gedefinieerd in **`config/jumper_config.yaml`**.
 
-Gedetailleerde code en configuratie-uitleg zijn te vinden op de [Project Webpagina](https://github.com/AP-IT-GH/jumper-assignment-swazzyb12/index.html).
+Gedetailleerde code en configuratie-uitleg zijn te vinden op de [Project Webpagina](https://ap-it-gh.github.io/jumper-assignment-swazzyb12/index.html).
 
 ## Probleemoplossing
 
 *   **Agent leert niet:** Controleer beloningsfunctie, observaties, hyperparameters.
 *   **`Module onnx is not installed!` error:** Installeer `onnx` via pip: `pip install onnx`.
-*   Voor overige problemen, zie de uitgebreide documentatie op de [Project Webpagina](https://github.com/AP-IT-GH/jumper-assignment-swazzyb12/index.html).
+*   Voor overige problemen, zie de uitgebreide documentatie op de [Project Webpagina](https://ap-it-gh.github.io/jumper-assignment-swazzyb12/index.html).
 
 ---
